@@ -1,37 +1,32 @@
-const fs = require("fs")
+const fs = require("fs");
 const readDb = require("../db/db.json");
 const path = require("path");
-var notes;
-
-fs.readFile("../db/db.json", "utf8", function(err, data) {
-    notes = JSON.parse(data);
-  //console.log(data);
-});
-
 
 module.exports = function(app) {
-    app.get("/api/notes", function(req, res) {
-        res.json(readDb);
-    });
+  var notes = require("../db/db.json");
 
-    app.post("/api/notes", function(req, res) {
-        const newNote = req.body;
-        notes.push(newNote);
-        console.log(notes);
-        res.json(readDb);
-    });
+  app.get("/api/notes", function(req, res) {
+    res.json(readDb);
+  });
 
+  app.post("/api/notes", function(req, res) {
+    var newNote = req.body;
+    newNote.id = notes.length;
+    notes.push(newNote);
+    saveNotes();
+    res.json({ ok: true });
+  });
 
-    app.delete("/api/notes/:id", function(req, res) {
-        fs.readFile('../db/db.json', (err, ) => {
-            if (err) {
-              console.error(err)
-              return
-            }
-            console.log(data)
-          })
+  app.delete("/api/notes/:id", function(req, res) {
+    notes = notes.fitler(test => test.id !== parseInt(req.params.id));
+    saveNotes();
+    res.json({ ok: true });
+  });
+
+  function saveNotes() {
+    fs.writeFile("../db/db.json", JSON.stringify(notes), function(err) {
+      if (err) throw err;
+      console.log("notes saved");
     });
-    
-  
-    
+  }
 };
